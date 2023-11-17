@@ -12,12 +12,14 @@ def configure_logging() -> None:
                 "console": {
                     "class": "logging.Formatter",
                     "datefmt": "%Y-%m-%dT%H:%M:%S",
-                    "format": "%(name)s:%(lineno)d - %(message)s",
+                    # "format": "%(name)s:%(lineno)d - %(message)s",
+                    "format": "%(asctime)s %(levelname)s %(name)s - %(funcName)s - %(lineno)d: %(message)s",
                 },
                 "file": {
                     "class": "logging.Formatter",
                     "datefmt": "%Y-%m-%dT%H:%M:%S",
-                    "format": "%(asctime)s.%(msecs)03dZ | %(levelname)-8s | %(name)s:%(lineno)d - %(message)s",
+                    # "format": "%(asctime)s.%(msecs)03dZ | %(levelname)-8s | %(name)s:%(lineno)d - %(message)s",
+                    "format": "%(asctime)s %(levelname)s %(name)s - %(funcName)s - %(lineno)d: %(message)s",
                 },
             },
             "handlers": {
