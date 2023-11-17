@@ -1,7 +1,8 @@
 import logging
 from contextlib import asynccontextmanager
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, HTTPException
+from fastapi.exception_handlers import http_exception_handler
 
 from . import routers
 from .db import database
@@ -32,5 +33,14 @@ def create_app() -> FastAPI:
         # Check if the attribute is an instance of APIRouter and register it
         if isinstance(attr, APIRouter):
             app.include_router(attr)
+
+    @app.exception_handler(HTTPException)
+    async def http_exception_handle_logging(request, exc):
+        """
+        This function handles all the errors without the need to add manually logger.error
+        We have used our own custom logging framework for this.
+        """
+        logger.error("HTTPException: %s %s", exc.status_code, exc.detail)
+        return await http_exception_handler(request, exc)
 
     return app
