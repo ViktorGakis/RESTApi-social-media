@@ -1,6 +1,7 @@
 import logging
 from contextlib import asynccontextmanager
 
+from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 
@@ -25,7 +26,7 @@ async def lifespan(app: FastAPI):
 
 def create_app() -> FastAPI:
     app: FastAPI = FastAPI(lifespan=lifespan)
-
+    app.add_middleware(CorrelationIdMiddleware)
     # Iterate through each attribute in the routers module
     for item in dir(routers):
         # Get the attribute

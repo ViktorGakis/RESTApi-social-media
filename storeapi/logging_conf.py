@@ -2,24 +2,34 @@ from logging.config import dictConfig
 
 from .config import DevConfig, config
 
+format = "(%(correlation_id)s) %(asctime)s %(levelname)s %(name)s - %(funcName)s - %(lineno)d: %(message)s"
+
 
 def configure_logging() -> None:
     dictConfig(
         {
             "version": 1,
             "disable_existing_loggers": False,
+            # this adds the id to the logs
+            "filters": {
+                "correlation_id": {
+                    "()": "asgi_correlation_id.CorrelationIdFilter",
+                    "uuid_length": 8 if isinstance(config, DevConfig) else 32,
+                    "default_value": "-",
+                }
+            },
             "formatters": {
                 "console": {
                     "class": "logging.Formatter",
                     "datefmt": "%Y-%m-%dT%H:%M:%S",
                     # "format": "%(name)s:%(lineno)d - %(message)s",
-                    "format": "%(asctime)s %(levelname)s %(name)s - %(funcName)s - %(lineno)d: %(message)s",
+                    "format": format,
                 },
                 "file": {
                     "class": "logging.Formatter",
                     "datefmt": "%Y-%m-%dT%H:%M:%S",
                     # "format": "%(asctime)s.%(msecs)03dZ | %(levelname)-8s | %(name)s:%(lineno)d - %(message)s",
-                    "format": "%(asctime)s %(levelname)s %(name)s - %(funcName)s - %(lineno)d: %(message)s",
+                    "format": format,
                 },
             },
             "handlers": {
@@ -27,6 +37,7 @@ def configure_logging() -> None:
                     "class": "rich.logging.RichHandler",
                     "level": "DEBUG",
                     "formatter": "console",
+                    "filters": ["correlation_id"],
                 },
                 "rotating_file": {
                     "class": "logging.handlers.RotatingFileHandler",
@@ -39,6 +50,7 @@ def configure_logging() -> None:
                     "backupCount": 2,
                     # best and more compact for english
                     "encoding": "utf8",
+                    "filters": ["correlation_id"],
                 },
             },
             "loggers": {
