@@ -1,1 +1,2 @@
-from .post import UserPost, UserPostIn
+from .post import Comment, CommentIn, UserPost, UserPostIn, UserPostWithComments
+from .user import User, UserIn
