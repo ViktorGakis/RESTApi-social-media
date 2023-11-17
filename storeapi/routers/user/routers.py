@@ -24,7 +24,7 @@ from . import router
 logger: logging.Logger = logging.getLogger(__name__)
 
 
-@router.post("/register", status_code=status.HTTP_200_OK)
+@router.post("/register", status_code=status.HTTP_201_CREATED)
 async def register(user: UserIn):
     if await get_user(user.email):
         raise HTTPException(
