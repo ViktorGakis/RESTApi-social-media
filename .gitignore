@@ -17,3 +17,4 @@ data/
 interface/
 server.py
 notes.md
+*.log
