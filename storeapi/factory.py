@@ -1,9 +1,10 @@
+from contextlib import asynccontextmanager
+
 from fastapi import APIRouter, FastAPI
 
 from . import routers
-
-from contextlib import asynccontextmanager
 from .db import database
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
@@ -12,8 +13,8 @@ async def lifespan(app: FastAPI):
     await database.disconnect()
 
 
-def create_app():
-    app: FastAPI = FastAPI()
+def create_app() -> FastAPI:
+    app: FastAPI = FastAPI(lifespan=lifespan)
 
     # Iterate through each attribute in the routers module
     for item in dir(routers):
