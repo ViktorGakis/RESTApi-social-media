@@ -33,12 +33,15 @@ async def create_post(post: UserPostIn):
 
     query = post_table.insert().values(data)
     last_record_id = await database.execute(query)
-    return {**data, "id", last_record_id}
+    return {**data, "id": last_record_id}
 
 
 @router.get("/post", response_model=list[UserPost])
 async def get_all_posts():
-    return list(post_table.values())
+    query = post_table.select()
+    # pre database
+    # return list(post_table.values())
+    return await database.fetch_all(query)
 
 
 @router.post("/comment", response_model=Comment, status_code=status.HTTP_201_CREATED)

@@ -22,21 +22,17 @@ class GlobalConfig(BaseConfig):
 
 
 class DevConfig(GlobalConfig):
-    class Config:
-        env_prefix: str = "DEV_"
+    model_config = SettingsConfigDict(env_prefix="DEV_", case_sensitive=True)
 
 
 class ProdConfig(GlobalConfig):
-    class Config:
-        env_prefix: str = "PROD_"
+    model_config = SettingsConfigDict(env_prefix="PROD_", case_sensitive=True)
 
 
 class TestConfing(GlobalConfig):
     DATABASE_URL: str = "sqlite:///test.db"
     DB_FORCE_ROLL_BACK: bool = True
-
-    class Config:
-        env_prefix: str = "TEST_"
+    model_config = SettingsConfigDict(env_prefix="TEST_", case_sensitive=True)
 
 
 @lru_cache()
