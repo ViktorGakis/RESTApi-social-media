@@ -4,3 +4,5 @@ pydantic_settings
 redis-om
 pytest
 httpx
+databases[aiosqlite]
+python-dotenv
