@@ -26,7 +26,11 @@ def configure_logging() -> None:
                     "format": format,
                 },
                 "file": {
-                    "class": "logging.Formatter",
+                    # "class": "logging.Formatter",
+                    # JSON FORMATTER
+                    # IT WILL GRAB ALL THE FORMAT VARS AUTOMATICALLY
+                    # FROM FORMAT BELLOW
+                    "class": "pythonjsonlogger.jsonlogger.JsonFormatter",
                     "datefmt": "%Y-%m-%dT%H:%M:%S",
                     # "format": "%(asctime)s.%(msecs)03dZ | %(levelname)-8s | %(name)s:%(lineno)d - %(message)s",
                     "format": format,
