@@ -13,6 +13,11 @@ def find_post(post_id: int):
     return post_table.get(post_id)
 
 
+@router.get("/", status_code=status.HTTP_200_OK)
+async def root():
+    return {"data": "banana"}
+
+
 @router.post("/post", response_model=UserPost, status_code=status.HTTP_201_CREATED)
 async def create_post(post: UserPostIn):
     data = post.model_dump()
@@ -42,7 +47,7 @@ async def create_comment(comment: CommentIn):
 
 
 @router.get(
-    "/post/{post_id}/comments",
+    "/post/{post_id}/comment",
     response_model=list[Comment],
     status_code=status.HTTP_200_OK,
 )
