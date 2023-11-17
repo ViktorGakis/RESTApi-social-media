@@ -6,3 +6,4 @@ pytest
 httpx
 databases[aiosqlite]
 python-dotenv
+rich

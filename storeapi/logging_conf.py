@@ -17,12 +17,13 @@ def configure_logging() -> None:
             },
             "handlers": {
                 "default": {
-                    "class": "logging.StreamHandler",
+                    "class": "rich.logging.RichHandler",
                     "level": "DEBUG",
                     "formatter": "console",
                 }
             },
             "loggers": {
+                "uvicorn": {"handlers": ["default"], "level": "INFO"},
                 # root is the parent of all
                 # storeapi.routers.post
                 "storeapi": {
@@ -31,7 +32,9 @@ def configure_logging() -> None:
                     # root is out
                     # we do not want to use it in dev
                     "propagate": False,
-                }
+                },
+                "databases": {"handlers": ["default"], "level": "WARNING"},
+                "aiosqlite": {"handlers": ["default"], "level": "WARNING"},
             },
         }
     )
