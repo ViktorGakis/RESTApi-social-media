@@ -18,12 +18,11 @@ from httpx import AsyncClient
 # because app calls db
 # and db reads config
 environ["ENV_STATE"] = "test"
-# this is called first
-from storeapi.db import database
+# db should be called first
+from storeapi.db import database, user_table
+
 # then the app is initiallized
 from main import app
-
-
 
 # async platform needed for pytest
 # this is practically saying use asyncio
@@ -50,3 +49,13 @@ def client() -> Generator:
 async def async_client(client) -> AsyncGenerator:
     async with AsyncClient(app=app, base_url=client.base_url) as ac:
         yield ac
+
+
+@pytest.fixture()
+async def registered_user(async_client: AsyncClient) -> dict:
+    user_details: dict[str, str] = {"email": "test@example.net", "password": "1234"}
+    await async_client.post("/register", json=user_details)
+    query = user_table.select().where(user_table.c.email == user_details["email"])
+    user = await database.fetch_one(query)
+    user_details["id"] = user.id
+    return user_details
