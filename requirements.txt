@@ -9,3 +9,5 @@ python-dotenv
 rich
 asgi-correlation-id
 python-json-logger
+passlib[bcrypt]
+pytest-mock
