@@ -2,6 +2,15 @@ from fastapi import APIRouter, FastAPI
 
 from . import routers
 
+from contextlib import asynccontextmanager
+from .db import database
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    await database.connect()
+    yield
+    await database.disconnect()
+
 
 def create_app():
     app: FastAPI = FastAPI()
