@@ -1,3 +1,4 @@
+from os import environ
 from typing import AsyncGenerator, Generator
 
 import pytest
@@ -5,12 +6,23 @@ from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
 # from storeapi import create_app
-from main import app
-from storeapi.routers.main.routers import comment_table, post_table
 
+
+# ---- Alternative way to import without factory
 # from ..routers.main.routers import comment_table, post_table
-
 # app = create_app()
+
+# ---- ENV CHANGE FOR TEST!
+# first we change the STATE
+# then we import app
+# because app calls db
+# and db reads config
+environ["ENV_STATE"] = "test"
+# this is called first
+from storeapi.db import database
+# then the app is initiallized
+from main import app
+
 
 
 # async platform needed for pytest
@@ -22,9 +34,11 @@ def anyio_backend():
 
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
-    post_table.clear()
-    comment_table.clear()
+    await database.connect()
+    # post_table.clear()
+    # comment_table.clear()
     yield
+    await database.disconnect()
 
 
 @pytest.fixture()

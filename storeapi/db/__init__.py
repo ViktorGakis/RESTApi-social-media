@@ -1,1 +1,1 @@
-from .setup import database, lifespan
+from .setup import comment_table, database, lifespan, post_table
