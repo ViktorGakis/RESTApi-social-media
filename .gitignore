@@ -16,3 +16,4 @@ k8s/
 data/
 interface/
 server.py
+notes.md

@@ -1,3 +1,4 @@
 fastapi[all]
+unicorn[standard]
 pydantic_settings
 redis-om
