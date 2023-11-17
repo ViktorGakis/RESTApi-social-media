@@ -2,7 +2,7 @@ import logging
 
 from fastapi import HTTPException, status
 
-from storeapi.security import get_user
+from storeapi.security import get_password_hash, get_user
 
 from ...db import comment_table, database, post_table, user_table
 from ...models import (
@@ -32,8 +32,8 @@ async def register(user: UserIn):
             detail="A user with that email already exists .",
         )
 
-    # passwords will be encrypted
-    query = user_table.insert().values(email=user.email, password=user.password)
+    hashed_password = get_password_hash(user.password)
+    query = user_table.insert().values(email=user.email, password=hashed_password)
 
     logger.debug(query)
 
