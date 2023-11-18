@@ -1,4 +1,5 @@
 from os import environ
+from pathlib import Path
 from typing import AsyncGenerator, Generator
 
 import pytest
@@ -35,6 +36,12 @@ def anyio_backend():
 
 @pytest.fixture(autouse=True)
 async def db() -> AsyncGenerator:
+    db_file_path = Path(environ["DEV_DATABASE_URL"].split("///")[-1])
+
+    if db_file_path.exists():
+        db_file_path.unlink()
+        print("TEST DB DELETED")
+
     await database.connect()
     # post_table.clear()
     # comment_table.clear()
