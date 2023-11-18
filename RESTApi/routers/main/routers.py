@@ -1,6 +1,7 @@
 import logging
 from typing import Annotated
 
+import sqlalchemy
 from fastapi import Depends, HTTPException, status
 
 from RESTApi.models.post import (
@@ -22,6 +23,12 @@ from . import router
 
 
 logger: logging.Logger = logging.getLogger(__name__)
+
+select_post_and_likes = (
+    sqlalchemy.select([post_table, like_table])
+    .select_from(post_table.outerjoin(like_table))
+    .group_by(post_table.c.id)
+)
 
 
 async def find_post(post_id: int):
@@ -100,7 +107,9 @@ async def get_comments_on_post(post_id: int):
 )
 async def get_post_with_comments(post_id: int):
     logger.info("Getting post and its comments")
-    post = await find_post(post_id)
+    query = select_post_and_likes.where(post_table.c.id == post_id)
+    logger.debug(query)
+    post = await database.fetch_one(query)
     if not post:
         logging.error("Post with post_id: %s, not found", post_id)
         raise HTTPException(
