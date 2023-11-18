@@ -1,6 +1,7 @@
 import logging
+from typing import Annotated
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 
 from ...db import comment_table, database, post_table, user_table
 from ...models import (
@@ -14,8 +15,10 @@ from ...models import (
 from ...security import (
     authenticate_user,
     create_access_token,
+    get_current_user,
     get_password_hash,
     get_user,
+    oauth2_scheme,
 )
 from . import router
 

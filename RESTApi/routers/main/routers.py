@@ -1,11 +1,13 @@
 import logging
+from typing import Annotated
 
-from fastapi import HTTPException, status
+from fastapi import Depends, HTTPException, status
 
 from RESTApi.models.post import Comment, CommentIn, UserPostWithComments
+from RESTApi.security import get_current_user
 
 from ...db import comment_table, database, post_table
-from ...models import UserPost, UserPostIn
+from ...models import User, UserPost, UserPostIn
 from . import router
 
 # these were pre database
@@ -29,15 +31,11 @@ async def root():
 
 
 @router.post("/post", response_model=UserPost, status_code=status.HTTP_201_CREATED)
-async def create_post(post: UserPostIn):
+async def create_post(
+    post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]
+):
     logger.info("Creating a post.")
     data = post.model_dump()
-
-    # pre database
-    # last_record_id = len(post_table)
-    # new_post = {**data, "id": last_record_id}
-    # post_table[last_record_id] = new_post
-    # return new_post
 
     query = post_table.insert().values(data)
     logger.debug(query)
@@ -56,7 +54,9 @@ async def get_all_posts():
 
 
 @router.post("/comment", response_model=Comment, status_code=status.HTTP_201_CREATED)
-async def create_comment(comment: CommentIn):
+async def create_comment(
+    comment: CommentIn, current_user: Annotated[User, Depends(get_current_user)]
+):
     logger.info("Creating a comment")
     post = await find_post(comment.post_id)
     if not post:

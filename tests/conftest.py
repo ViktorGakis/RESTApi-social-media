@@ -2,6 +2,7 @@ from os import environ
 from typing import AsyncGenerator, Generator
 
 import pytest
+from fastapi import Response
 from fastapi.testclient import TestClient
 from httpx import AsyncClient
 
@@ -18,11 +19,12 @@ from httpx import AsyncClient
 # because app calls db
 # and db reads config
 environ["ENV_STATE"] = "test"
+# then the app is initiallized
+from main import app
+
 # db should be called first
 from RESTApi.db import database, user_table
 
-# then the app is initiallized
-from main import app
 
 # async platform needed for pytest
 # this is practically saying use asyncio
@@ -59,3 +61,9 @@ async def registered_user(async_client: AsyncClient) -> dict:
     user = await database.fetch_one(query)
     user_details["id"] = user.id
     return user_details
+
+
+@pytest.fixture()
+async def logged_in_token(async_client: AsyncClient, registered_user: dict):
+    response: Response = await async_client.post("/token", json=registered_user)
+    return response.json()["access_token"]

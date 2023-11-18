@@ -61,5 +61,5 @@ async def test_get_current_user(registered_user: dict):
 
 @pytest.mark.anyio
 async def test_get_current_user_invalid_token():
-    with pytest.raises(JWTError):
+    with pytest.raises(security.HTTPException):
         await security.get_current_user("invalid token")

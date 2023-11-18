@@ -3,7 +3,7 @@ from datetime import UTC, datetime, timedelta
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
-from fastapi.security import OAuth2AuthorizationCodeBearer
+from fastapi.security import OAuth2PasswordBearer
 from jose import ExpiredSignatureError, JWTError, jwt
 from jose.exceptions import JWEError
 from passlib.context import CryptContext
@@ -18,7 +18,7 @@ ALGORITHM = "HS256"
 
 # tokenUrl specifies the endpoint in the API that will handle
 # or relative URL to your API's token endpoint
-oauth2_scheme = OAuth2AuthorizationCodeBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 pwd_context = CryptContext(schemes=["bcrypt"])
 
@@ -31,7 +31,7 @@ credentials_exception = HTTPException(
 
 def create_access_token(email: str):
     logger.debug("Creating access token", extra={"email": email})
-    expire = datetime.now(UTC) + timedelta(minutes=30)
+    expire = datetime.now(UTC) + timedelta(minutes=access_token_expire_minutes())
     jwt_data = {"sub": email, "exp": expire}
     encoded_jwt = jwt.encode(jwt_data, key=SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
