@@ -2,17 +2,20 @@ import logging
 
 from fastapi import HTTPException, status
 
-from storeapi.security import get_password_hash, get_user
-
 from ...db import comment_table, database, post_table, user_table
 from ...models import (
     Comment,
     CommentIn,
-    User,
     UserIn,
     UserPost,
     UserPostIn,
     UserPostWithComments,
+)
+from ...security import (
+    authenticate_user,
+    create_access_token,
+    get_password_hash,
+    get_user,
 )
 from . import router
 
@@ -40,6 +43,13 @@ async def register(user: UserIn):
     await database.execute(query)
 
     return {"detail": "User created"}
+
+
+@router.post("/token", status_code=status.HTTP_201_CREATED)
+async def login(user: UserIn):
+    user = await authenticate_user(user.email, user.password)
+    access_token = create_access_token(user.email)
+    return {"access_token": access_token, "token_type": "bearer"}
 
 
 async def find_post(post_id: int):

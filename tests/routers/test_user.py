@@ -27,3 +27,25 @@ async def test_register_user_already_exists(
     )
     assert response.status_code == status.HTTP_404_NOT_FOUND
     assert "already exists" in response.json()["detail"]
+
+
+@pytest.mark.anyio
+async def test_login_user_not_exists(async_client: AsyncClient):
+    response: Response = await async_client.post(
+        "/token", json={"email": "test@example.net", "password": "1234"}
+    )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+    # assert "" in response.json()["detail"]
+
+
+@pytest.mark.anyio
+async def test_login_user(async_client: AsyncClient, registered_user: dict):
+    response: Response = await async_client.post(
+        "/token",
+        json={
+            "email": registered_user["email"],
+            "password": registered_user["password"],
+        },
+    )
+    assert response.status_code == status.HTTP_201_CREATED
+    # assert "" in response.json()["detail"]
