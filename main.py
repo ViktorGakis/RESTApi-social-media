@@ -1,4 +1,4 @@
-from storeapi import create_app
+from RESTApi import create_app
 
 app = create_app()
 

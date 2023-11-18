@@ -19,7 +19,7 @@ from httpx import AsyncClient
 # and db reads config
 environ["ENV_STATE"] = "test"
 # db should be called first
-from storeapi.db import database, user_table
+from RESTApi.db import database, user_table
 
 # then the app is initiallized
 from main import app

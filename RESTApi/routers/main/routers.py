@@ -2,7 +2,7 @@ import logging
 
 from fastapi import HTTPException, status
 
-from storeapi.models.post import Comment, CommentIn, UserPostWithComments
+from RESTApi.models.post import Comment, CommentIn, UserPostWithComments
 
 from ...db import comment_table, database, post_table
 from ...models import UserPost, UserPostIn
