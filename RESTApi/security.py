@@ -1,8 +1,10 @@
 import logging
 from datetime import UTC, datetime, timedelta
+from typing import Annotated
 
-from fastapi import HTTPException, status
-from jose import ExpiredSignatureError, jwt
+from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2AuthorizationCodeBearer
+from jose import ExpiredSignatureError, JWTError, jwt
 from jose.exceptions import JWEError
 from passlib.context import CryptContext
 
@@ -13,6 +15,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 # openssl rand -base64 55
 SECRET_KEY = "lFCXytdXwZAtsyALaJG9R+DKZKM03HQgDThtguKrRWXBNpbgREp"
 ALGORITHM = "HS256"
+
+# tokenUrl specifies the endpoint in the API that will handle
+# or relative URL to your API's token endpoint
+oauth2_scheme = OAuth2AuthorizationCodeBearer(tokenUrl="token")
+
 pwd_context = CryptContext(schemes=["bcrypt"])
 
 credentials_exception = HTTPException(
@@ -60,26 +67,29 @@ async def authenticate_user(email: str, password: str):
     return user
 
 
-async def get_current_user(token: str):
-    try:
-        payload = jwt.decode(
-            token,
-            key=SECRET_KEY,
-            algorithms=ALGORITHM,
-            # options={"verify_signature": True},
-        )
-        email = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-    except ExpiredSignatureError as e:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token has expired",
-            headers={"WWW-Authenticate": "bearer"},
-        ) from e
-    except JWEError as e:
-        raise credentials_exception from e
-    user = await get_user(email=email)
+async def get_current_user(token: Annotated[str, Depends(oauth2_scheme)]):
+    user = await verify_token(token)
     if user is None:
         raise credentials_exception
     return user
+
+
+async def verify_token(token: str):
+    try:
+        payload = jwt.decode(token, key=SECRET_KEY, algorithms=ALGORITHM)
+        email = payload.get("sub")
+        if email is None:
+            return None
+        return await get_user(email=email)
+    except ExpiredSignatureError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Token has expired",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
+    except JWTError:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Could not validate credentials",
+            headers={"WWW-Authenticate": "Bearer"},
+        )
