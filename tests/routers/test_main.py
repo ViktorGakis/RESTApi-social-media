@@ -1,6 +1,7 @@
 import pytest
 from fastapi import status
 from httpx import AsyncClient, Response
+from starlette.status import HTTP_201_CREATED
 
 from RESTApi.security import create_access_token
 
@@ -22,6 +23,17 @@ async def create_comment(
     response: Response = await async_client.post(
         "/comment",
         json={"body": body, "post_id": post_id},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    return response.json()
+
+
+async def like_post(
+    post_id: int, async_client: AsyncClient, logged_in_token: str
+) -> dict:
+    response: Response = await async_client.post(
+        "/like",
+        json={"post_id": post_id},
         headers={"Authorization": f"Bearer {logged_in_token}"},
     )
     return response.json()
@@ -136,3 +148,15 @@ async def test_get_post_with_comments(
 
     assert response.status_code == status.HTTP_200_OK
     assert response.json() == {"post": created_post, "comments": [created_comment]}
+
+
+@pytest.mark.anyio
+async def test_like_post(
+    async_client: AsyncClient, created_post: dict, logged_in_token: str
+):
+    response: Response = await async_client.post(
+        "/like",
+        json={"post_id": created_post["id"]},
+        headers={"Authorization": f"Bearer {logged_in_token}"},
+    )
+    assert response.status_code == status.HTTP_201_CREATED
