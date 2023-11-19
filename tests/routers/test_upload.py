@@ -47,4 +47,7 @@ async def test_upload_image(
         async_client, logged_in_token, sample_image
     )
     assert response.status_code == status.HTTP_201_CREATED
-    assert response.json()["file_url"] == "https://fakeurl.com"
+    assert (
+        response.json()["file_url"]
+        == f"/static/uploads/{sample_image.stem}{sample_image.suffix}"
+    )

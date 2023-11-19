@@ -8,7 +8,7 @@ from fastapi import HTTPException, UploadFile, status
 from . import router
 
 chunk_size = 1024 * 1024
-UPLOAD_DIRECTORY = Path(".../static/assets/")
+UPLOAD_DIRECTORY = Path(__file__).resolve().parent.parent.parent / "static/uploads"
 
 logger = logging.getLogger(__name__)
 
@@ -16,20 +16,23 @@ logger = logging.getLogger(__name__)
 @router.post("/upload", status_code=status.HTTP_201_CREATED)
 async def upload_file(file: UploadFile):
     try:
-        with tempfile.namedtemporaryfile() as temp_file:
-            filename = temp_file.name
-            logger.info(f"saving uploaded file temporarily to {filename}")
-            file_location = f"{UPLOAD_DIRECTORY}/{file.filename}"
-            async with aiofiles.open(file_location, "wb") as f:
-                while chunk := await file.read(chunk_size):
-                    await f.write(chunk)
+        # Ensure the upload directory exists
+        UPLOAD_DIRECTORY.mkdir(parents=True, exist_ok=True)
 
-            file_url = f"/static/{file.filename}"
+        file_location = UPLOAD_DIRECTORY / file.filename
 
-    except Exception:
+        logger.info(f"Saving uploaded file to {file_location}")
+        async with aiofiles.open(file_location, "wb") as f:
+            while chunk := await file.read(chunk_size):
+                await f.write(chunk)
+
+        file_url = f"/static/uploads/{file.filename}"
+
+    except Exception as e:
+        logger.error(f"Error while uploading file: {e}", exc_info=True)
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            detail="there was an error uploading the file",
-        )
+            detail="There was an error uploading the file",
+        ) from e
 
-    return {"detail": f"successfully uploaded {file.filename}", "file_url": file_url}
+    return {"detail": f"Successfully uploaded {file.filename}", "file_url": file_url}
