@@ -2,8 +2,6 @@ import pytest
 from fastapi import Request, status
 from httpx import AsyncClient, Response
 
-from tests.conftest import async_client
-
 
 async def register_user(
     async_client: AsyncClient, email: str, password: str
@@ -66,11 +64,12 @@ async def test_login_user_not_exists(async_client: AsyncClient):
         "/token", json={"email": "test@example.net", "password": "1234"}
     )
     assert response.status_code == status.HTTP_401_UNAUTHORIZED
-    # assert "" in response.json()["detail"]
 
 
 @pytest.mark.anyio
-async def test_login_user(async_client: AsyncClient, registered_user: dict):
+async def test_login_user_not_confirmed(
+    async_client: AsyncClient, registered_user: dict
+):
     response: Response = await async_client.post(
         "/token",
         json={
@@ -78,5 +77,16 @@ async def test_login_user(async_client: AsyncClient, registered_user: dict):
             "password": registered_user["password"],
         },
     )
+    assert response.status_code == status.HTTP_401_UNAUTHORIZED
+
+
+@pytest.mark.anyio
+async def test_login_user(async_client: AsyncClient, confirmed_user: dict):
+    response: Response = await async_client.post(
+        "/token",
+        json={
+            "email": confirmed_user["email"],
+            "password": confirmed_user["password"],
+        },
+    )
     assert response.status_code == status.HTTP_201_CREATED
-    # assert "" in response.json()["detail"]
