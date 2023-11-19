@@ -39,11 +39,6 @@ async def find_post(post_id: int):
     return await database.fetch_one(query)
 
 
-@router.get("/", status_code=status.HTTP_200_OK)
-async def root():
-    return {"data": "banana"}
-
-
 @router.post("/post", response_model=UserPost, status_code=status.HTTP_201_CREATED)
 async def create_post(
     post: UserPostIn, current_user: Annotated[User, Depends(get_current_user)]

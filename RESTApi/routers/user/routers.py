@@ -1,7 +1,6 @@
 import logging
-from typing import Annotated
 
-from fastapi import Depends, HTTPException, Request, status
+from fastapi import HTTPException, Request, status
 
 from ...db import comment_table, database, post_table, user_table
 from ...models import (
@@ -16,18 +15,11 @@ from ...security import (
     authenticate_user,
     create_access_token,
     create_confirmation_token,
-    get_current_user,
     get_password_hash,
     get_subject_for_token_type,
     get_user,
-    oauth2_scheme,
 )
 from . import router
-
-# these were pre database
-# post_table: dict = {}
-# comment_table: dict = {}
-
 
 logger: logging.Logger = logging.getLogger(__name__)
 
@@ -70,20 +62,14 @@ async def find_post(post_id: int):
 
 
 @router.get("/", status_code=status.HTTP_200_OK)
-async def root():
-    return {"data": "banana"}
+async def root(request: Request):
+    return {"data": "banana", "ip": request.client.host}
 
 
 @router.post("/post", response_model=UserPost, status_code=status.HTTP_201_CREATED)
 async def create_post(post: UserPostIn):
     logger.info("Creating a post.")
     data = post.model_dump()
-
-    # pre database
-    # last_record_id = len(post_table)
-    # new_post = {**data, "id": last_record_id}
-    # post_table[last_record_id] = new_post
-    # return new_post
 
     query = post_table.insert().values(data)
     logger.debug(query)
@@ -95,8 +81,7 @@ async def create_post(post: UserPostIn):
 async def get_all_posts():
     logger.info("Getting all posts.")
     query = post_table.select()
-    # pre database
-    # return list(post_table.values())
+
     logger.debug(query)
     return await database.fetch_all(query)
 
@@ -110,12 +95,7 @@ async def create_comment(comment: CommentIn):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND, detail="Post not found."
         )
-    # pre database
-    # data = comment.model_dump()
-    # last_record_id = len(comment_table)
-    # new_comment = {**data, "id": last_record_id}
-    # comment_table[last_record_id] = new_comment
-    # return new_comment
+
     data = comment.model_dump()
     query = comment_table.insert().values(data)
     logger.debug(query)
