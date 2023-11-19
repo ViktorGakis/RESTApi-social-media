@@ -1,28 +1,18 @@
 import logging
 from contextlib import asynccontextmanager
+from pathlib import Path
 
 from asgi_correlation_id import CorrelationIdMiddleware
 from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.exception_handlers import http_exception_handler
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 
 from . import routers
 from .db import database
 from .logging_conf import configure_logging
 
 logger: logging.Logger = logging.getLogger(__name__)
-
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    # logging setup will run at startup
-    # before db
-    configure_logging()
-    logger.info("App initializing...")
-    await database.connect()
-    yield
-    logger.info("App terminating...")
-    await database.disconnect()
 
 
 origins = [
@@ -62,5 +52,20 @@ def create_app() -> FastAPI:
         allow_methods=["*"],
         allow_headers=["*"],
     )
+    STATIC_DIR_PATH = Path(__file__).parent / "static/"
+    STATIC_DIR_PATH.mkdir(parents=True, exist_ok=True)
+    app.mount("/static", StaticFiles(directory=STATIC_DIR_PATH), name="static")
 
     return app
+
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # logging setup will run at startup
+    # before db
+    configure_logging()
+    logger.info("App initializing...")
+    await database.connect()
+    yield
+    logger.info("App terminating...")
+    await database.disconnect()

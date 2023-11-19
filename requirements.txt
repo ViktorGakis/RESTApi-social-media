@@ -12,3 +12,5 @@ python-json-logger
 passlib[bcrypt]
 pytest-mock
 python-jose
+aiofiles
+pyfakefs
