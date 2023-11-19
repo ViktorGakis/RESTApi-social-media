@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from pathlib import Path
 
@@ -51,3 +52,13 @@ async def test_upload_image(
         response.json()["file_url"]
         == f"/static/uploads/{sample_image.stem}{sample_image.suffix}"
     )
+
+
+@pytest.mark.anyio
+async def test_temp_file_removed_after_upload(
+    async_client: AsyncClient, logged_in_token: str, sample_image: Path, mocker
+):
+    response = await call_upload_endpoint(async_client, logged_in_token, sample_image)
+    assert response.status_code == status.HTTP_201_CREATED
+    sample_image.unlink()
+    assert not sample_image.exists()
