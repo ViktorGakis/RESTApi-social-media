@@ -5,7 +5,6 @@ from typing import Annotated
 from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import ExpiredSignatureError, JWTError, jwt
-from jose.exceptions import JWEError
 from passlib.context import CryptContext
 
 from .db import database, user_table
@@ -20,7 +19,7 @@ ALGORITHM = "HS256"
 # or relative URL to your API's token endpoint
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
-pwd_context = CryptContext(schemes=["bcrypt"])
+pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 credentials_exception = HTTPException(
     status_code=status.HTTP_401_UNAUTHORIZED,
