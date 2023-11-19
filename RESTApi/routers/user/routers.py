@@ -1,7 +1,7 @@
 import logging
 from typing import Annotated
 
-from fastapi import Depends, HTTPException, status
+from fastapi import Depends, HTTPException, Request, status
 
 from ...db import comment_table, database, post_table, user_table
 from ...models import (
@@ -15,8 +15,10 @@ from ...models import (
 from ...security import (
     authenticate_user,
     create_access_token,
+    create_confirmation_token,
     get_current_user,
     get_password_hash,
+    get_subject_for_token_type,
     get_user,
     oauth2_scheme,
 )
@@ -31,7 +33,7 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 
 @router.post("/register", status_code=status.HTTP_201_CREATED)
-async def register(user: UserIn):
+async def register(user: UserIn, request: Request):
     if await get_user(user.email):
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
@@ -45,7 +47,12 @@ async def register(user: UserIn):
 
     await database.execute(query)
 
-    return {"detail": "User created"}
+    return {
+        "detail": "User created",
+        "confirmation_url": request.url_for(
+            "confirm_email", token=create_confirmation_token(user.email)
+        ),
+    }
 
 
 @router.post("/token", status_code=status.HTTP_201_CREATED)
@@ -147,3 +154,15 @@ async def get_post_with_comments(post_id: int):
         )
 
     return {"post": post, "comments": await get_comments_on_post(post_id)}
+
+
+@router.get("/confirm/{token}")
+async def confirm_email(token: str):
+    email: str = get_subject_for_token_type(token, "confirmation")
+    query = (
+        user_table.update().where(user_table.c.email == email).values(confirmed=True)
+    )
+    logger.debug(query)
+
+    await database.execute(query)
+    return {"detail": "User confirmed"}
